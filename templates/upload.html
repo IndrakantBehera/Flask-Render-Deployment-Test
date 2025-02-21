@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stream Generation Tool</title>
+    <style>
+        /* Dark theme with background image */
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background-image: url('https://images.unsplash.com/photo-1613765770841-908c87902f94?q=80&w=1976&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); /* Replace with your image URL */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: rgba(42, 42, 64, 0.9); /* Semi-transparent dark background */
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .title {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 40px;
+            margin-bottom: 20px;
+            color: #FFFFFF;
+        }
+
+        .info {
+            font-size: 16px;
+            margin-bottom: 25px;
+            color: #cccccc;
+        }
+
+        .step {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .step label {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: #FFFFFF;
+        }
+
+        .step input,
+        .step select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 6px;
+            background-color: rgba(58, 58, 80, 0.8); /* Semi-transparent input background */
+            color: #ffffff;
+            font-size: 16px;
+        }
+
+        .step input:focus,
+        .step select:focus {
+            outline: none;
+            border-color: #00ffcc;
+        }
+
+        .submit-button {
+            background-color: #00ffcc;
+            color: #1e1e2f;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .submit-button:hover {
+            background-color: #00ccaa;
+        }
+
+        .developed-by {
+            font-size: 20px;
+            margin-top: 25px;
+            color: #FFFFFF;
+        }
+
+        /* Loading bar */
+        .loading-bar {
+            display: none;
+            width: 100%;
+            height: 10px;
+            background-color: #3a3a50;
+            border-radius: 5px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .loading-bar-inner {
+            width: 0;
+            height: 100%;
+            background-color: #00ffcc;
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">Automatic Stream Generation Tool</div>
+        <div class="info">
+            This tool allows users to upload a Digital Elevation Model (DEM) file to generate stream networks and related hydrological datasets automatically. Users can select the desired map projection and specify a threshold value, which determines the minimum flow accumulation required for stream initiation. The tool processes the input DEM using advanced geospatial algorithms to extract flow direction, flow accumulation, stream networks, and stream order, providing accurate and high-resolution hydrological outputs.
+        </div>
+        <form id="upload-form" action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data">
+            <div class="step">
+                <label for="file">Upload DEM File:</label>
+                <input type="file" name="file" id="file" required>
+            </div>
+            <div class="step">
+                <label for="projection">Select Target Projection:</label>
+                <select name="projection" id="projection" required>
+                    <option value="WGS 1984">WGS 1984</option>
+                    {% for i in range(1, 61) %}
+                        <option value="WGS 1984 UTM Zone {{ i }}N">WGS 1984 UTM Zone {{ i }}N</option>
+                    {% endfor %}
+                    {% for i in range(1, 61) %}
+                        <option value="WGS 1984 UTM Zone {{ i }}S">WGS 1984 UTM Zone {{ i }}S</option>
+                    {% endfor %}
+                    <option value="NAD83 / UTM zone 1N">NAD83 / UTM zone 1N</option>
+                    <option value="NAD83 / UTM zone 2N">NAD83 / UTM zone 2N</option>
+                    <!-- Add all UTM zones for NAD83 -->
+                    <option value="NAD83 / UTM zone 60N">NAD83 / UTM zone 60N</option>
+                    <option value="NAD27 / UTM zone 1N">NAD27 / UTM zone 1N</option>
+                    <option value="NAD27 / UTM zone 2N">NAD27 / UTM zone 2N</option>
+                    <!-- Add all UTM zones for NAD27 -->
+                    <option value="NAD27 / UTM zone 60N">NAD27 / UTM zone 60N</option>
+                    <option value="ETRS89 / UTM zone 28N">ETRS89 / UTM zone 28N</option>
+                    <option value="ETRS89 / UTM zone 29N">ETRS89 / UTM zone 29N</option>
+                    <!-- Add all UTM zones for ETRS89 -->
+                    <option value="ETRS89 / UTM zone 38N">ETRS89 / UTM zone 38N</option>
+                    <option value="ETRS89 / UTM zone 39N">ETRS89 / UTM zone 39N</option>
+                    <option value="ETRS89 / UTM zone 40N">ETRS89 / UTM zone 40N</option>
+                </select>
+            </div>
+            <div class="step">
+                <label for="threshold">Set Stream Extraction Threshold:</label>
+                <input type="number" name="threshold" id="threshold" value="500" required>
+            </div>
+            <button type="submit" class="submit-button">Submit and Process</button>
+        </form>
+        <div class="loading-bar" id="loading-bar">
+            <div class="loading-bar-inner" id="loading-bar-inner"></div>
+        </div>
+        <div class="developed-by">Developed by Indrakant Behera, IIT Roorkee</div>
+    </div>
+
+    <script>
+        // Show loading bar on form submission
+        document.getElementById('upload-form').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent default form submission
+            document.getElementById('loading-bar').style.display = 'block';
+            document.getElementById('loading-bar-inner').style.width = '0%';
+
+            // Submit the form data using Fetch API
+            const formData = new FormData(document.getElementById('upload-form'));
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json())
+              .then(data => {
+                  if (data.status === "Processing started") {
+                      // Start checking progress
+                      checkProgress();
+                  }
+              });
+        });
+
+        // Function to check progress
+        function checkProgress() {
+            fetch('/progress') // Flask endpoint to get progress
+                .then(response => response.json())
+                .then(data => {
+                    const progress = data.progress;
+                    document.getElementById('loading-bar-inner').style.width = `${progress}%`;
+
+                    if (progress < 100) {
+                        // Continue checking progress
+                        setTimeout(checkProgress, 500); // Check every 500ms
+                    } else {
+                        // Redirect to result page when processing is complete
+                        window.location.href = "{{ url_for('result') }}";
+                    }
+                });
+        }
+    </script>
+</body>
+</html>

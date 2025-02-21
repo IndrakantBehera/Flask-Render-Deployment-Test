@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processed Files</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background-image: url('https://images.unsplash.com/photo-1613765770841-908c87902f94?q=80&w=1976&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); /* Replace with your image URL */
+            background-color: #1e1e2f;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #2a2a40;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .title {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #00ffcc;
+        }
+
+        .file-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .file-list li {
+            margin: 15px 0;
+        }
+
+        .file-list a {
+            color: #00ffcc;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        .file-list a:hover {
+            text-decoration: underline;
+        }
+
+        .info-button {
+            margin-left: 10px;
+            cursor: pointer;
+            background-color: #00ffcc;
+            color: #1e1e2f;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #00ffcc;
+            color: #1e1e2f;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #00ccaa;
+        }
+    </style>
+    <script>
+        function showInfo(dataset) {
+            let infoText = "";
+
+            switch (dataset) {
+                case "Reprojected DEM":
+                    infoText = "Reprojected DEM is the Digital Elevation Model (DEM) converted into a specified coordinate reference system (CRS), ensuring spatial alignment with other datasets.";
+                    break;
+                case "Filled DEM":
+                    infoText = "Filled DEM is a corrected version of the original DEM where depressions (sinks) are filled to ensure a continuous flow of water without artificial interruptions.";
+                    break;
+                case "Flow Direction":
+                    infoText = "Flow Direction raster represents the direction water will flow out of each cell in the DEM, following the steepest descent using the D8 algorithm.";
+                    break;
+                case "Flow Accumulation":
+                    infoText = "Flow Accumulation raster calculates the total number of upstream cells contributing to each cell, helping to identify drainage networks and potential stream paths.";
+                    break;
+                case "Streams":
+                    infoText = "Streams raster represents the extracted stream network derived from the Flow Accumulation raster using a threshold value, showing areas with concentrated water flow.";
+                    break;
+                case "Strahler Streams":
+                    infoText = "Strahler Streams dataset applies the Strahler Stream Order system, where headwater streams are assigned Order 1, and merging streams increase in hierarchical order.";
+                    break;
+                case "Streams (Undissolved)":
+                    infoText = "Streams (Undissolved) dataset contains stream segments that are kept separate, preserving individual stream sections rather than merging them.";
+                    break;
+                case "Streams (Dissolved)":
+                    infoText = "Streams (Dissolved) dataset merges stream segments of the same order into continuous stream networks, making it useful for hydrological modeling.";
+                    break;
+                default:
+                    infoText = "This dataset is part of the stream extraction and hydrological analysis process.";
+            }
+
+            alert(infoText);
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="title">Processing Completed</div>
+        <div>You can check the results below:</div>
+        <ul class="file-list">
+            {% for key, link in download_links.items() %}
+                <li>
+                    <a href="{{ link }}">{{ key }}</a>
+                    <button class="info-button" onclick="showInfo('{{ key }}')">ℹ️</button>
+                </li>
+            {% endfor %}
+        </ul>
+        <a href="{{ url_for('home') }}" class="back-button">UPLOAD ANOTHER DEM</a>
+    </div>
+</body>
+</html>
